@@ -5,6 +5,8 @@ namespace SimpleBus\DoctrineDBALBridge\Tests\MessageBus;
 use Doctrine\DBAL\Driver\Connection;
 use Error;
 use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use SimpleBus\DoctrineDBALBridge\MessageBus\WrapsMessageHandlingInTransaction;
 use stdClass;
@@ -12,9 +14,7 @@ use Throwable;
 
 class WrapsMessageHandlingInTransactionTest extends TestCase
 {
-    /**
-     * @test
-     */
+    #[Test]
     public function itWrapsTheNextMiddlewareInATransaction(): void
     {
         $nextIsCalled = false;
@@ -40,25 +40,8 @@ class WrapsMessageHandlingInTransactionTest extends TestCase
         $this->assertTrue($nextIsCalled);
     }
 
-    /**
-     * @return array<Throwable[]>
-     */
-    public function errorProvider(): array
-    {
-        return [
-            [
-                new Exception(),
-            ],
-            [
-                new Error(),
-            ],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider errorProvider
-     */
+    #[Test]
+    #[DataProvider('errorProvider')]
     public function itRollsTheTransactionBackWhenAnThrowableIsThrown(Throwable $error): void
     {
         $message = new stdClass();
@@ -84,5 +67,20 @@ class WrapsMessageHandlingInTransactionTest extends TestCase
         } catch (Throwable $actualError) {
             $this->assertSame($error, $actualError);
         }
+    }
+
+    /**
+     * @return array<Throwable[]>
+     */
+    public static function errorProvider(): array
+    {
+        return [
+            [
+                new Exception(),
+            ],
+            [
+                new Error(),
+            ],
+        ];
     }
 }
